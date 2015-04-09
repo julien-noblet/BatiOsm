@@ -49,15 +49,15 @@ class Batiment:
         - nombre_tag : le nombre de tag défini dans le fichier
         - tableau_tag_key : le tableau d'identifiants des tags
         - tableau_tag_value : le tableau des valeurs des tags
-        - pbAire : l'information si le batiment a une aire nulle
+        - pbAire : l'information si le batiment a une aire nulle (booleen)
         - multipolygone : yes si le batiment en est un, no sinon
         - role : le role si le batiment appartient à une relation
         - ind_relation : l'indice de la relation auquel il appartient
     """
     def __init__(self, bat_id, nbre_node, node_id, 
             numTag, tableauTagKey, tableauTagValue, 
-            distance=1000, largeur = 0., status = "UNKNOWN", pbAire = "NO",
-            multipolygone = "no", role = "outer", ind_relation = 0):
+            distance=1000, largeur = 0., status = "UNKNOWN", pbAire = False,
+            multipolygone = False, role = "outer", ind_relation = 0):
         self.bat_id = bat_id
         self.nbre_node = nbre_node
         self.node_id = node_id
@@ -67,9 +67,9 @@ class Batiment:
         self.nombre_tag = numTag
         self.tableau_tag_key = tableauTagKey
         self.tableau_tag_value = tableauTagValue
-        self.pbAire = "NO"
-        self.multipolygone = "no"
-        self.role = "outer"
+        self.pbAire = pbAire
+        self.multipolygone = multipolygone
+        self.role = role
         self.ind_relation = 0
     
     def BatimentToPoint(self):
@@ -113,7 +113,7 @@ class Batiment:
                 lonLocale[i_node + 1]) * produitEnCroix
             i_node = i_node + 1
         if aire == 0.:
-            self.pbAire = "YES"
+            self.pbAire = True
             latitude = latMoyenne / self.nbre_node
             longitude = lonMoyenne / self.nbre_node
         else:
@@ -347,7 +347,7 @@ for ligne in file_old:
         old_bati.append(Batiment(way_id, i_nd_ref, nodes, \
             numTag, tagKey, tagValue, 1000, 0., "UNKNOWN"))
         old_bati[old_nbre_ways].BatimentToPoint()
-        if old_bati[old_nbre_ways].pbAire == "YES":
+        if old_bati[old_nbre_ways].pbAire:
             print "  Warning, surface nulle obtenue pour le batiment :", \
                 old_bati[old_nbre_ways].bat_id 
         old_bati[old_nbre_ways].calculLargeur()
@@ -368,7 +368,7 @@ for ligne in file_old:
         for i_member in range(nb_member):
             for i_bat in range(old_nbre_ways):
                 if old_bati[i_bat].bat_id == tab_id_member[i_member]:
-                    old_bati[i_bat].multipolygone = "yes"
+                    old_bati[i_bat].multipolygone = True
                     old_bat[i_bat].ind_relation = old_nbre_relation
                     tab_ind_member.append(i_bat)
                     if tab_role[i_member] == "inner":
@@ -444,7 +444,7 @@ for ligne in file_new:
         new_bati.append(Batiment(way_id, i_nd_ref, nodes, \
             numTag, tagKey, tagValue, 1000, 0., "UNKNOWN"))
         new_bati[new_nbre_ways].BatimentToPoint()
-        if new_bati[new_nbre_ways].pbAire == "YES":
+        if new_bati[new_nbre_ways].pbAire:
             print "  Attention, surface nulle obtenue pour le batiment :", \
                 new_bati[new_nbre_ways].bat_id 
         new_bati[new_nbre_ways].calculLargeur()
@@ -465,7 +465,7 @@ for ligne in file_new:
         for i_member in range(nb_member):
             for i_bat in range(new_nbre_ways):
                 if new_bati[i_bat].bat_id == tab_id_member[i_member]:
-                    new_bati[i_bat].multipolygone = "yes"
+                    new_bati[i_bat].multipolygone = True
                     new_bati[i_bat].ind_relation = new_nbre_relation
                     tab_ind_member.append(i_bat)
                     if tab_role[i_member] == "inner":
@@ -672,7 +672,7 @@ file_noMod_building.write("<osm version='0.6' upload='true' generator='JOSM'>" +
 for i_bat in range(dernier_id_identique):
     new_bati_sorted[i_bat].export_bat()
     file_noMod_building.write(new_bati_sorted[i_bat].print_bat + "\n")
-    if new_bati_sorted[i_bat].multipolygone == "yes":
+    if new_bati_sorted[i_bat].multipolygone :
         relation = new_bati_sorted[i_bat].ind_relation
         for members in range(new_relation[relation].nb_ways):
             if new_relation[relation].role[members] == "inner":
@@ -703,7 +703,7 @@ for i_bat in range(nb_bat_mod):
     indice = dernier_id_inner_new + i_bat + 1
     new_bati_sorted[indice].export_bat()
     file_mod_building.write(new_bati_sorted[indice].print_bat + "\n")
-    if new_bati_sorted[indice].multipolygone == "yes":
+    if new_bati_sorted[indice].multipolygone :
         relation = new_bati_sorted[indice].ind_relation
         for members in range(new_relation[relation].nb_ways):
             if new_relation[relation].role[members] == "inner":
@@ -734,7 +734,7 @@ for i_bat in range(nb_bat_new):
     indice = dernier_id_modifie + i_bat + 1
     new_bati_sorted[indice].export_bat()
     file_new_building.write(new_bati_sorted[indice].print_bat + "\n")
-    if new_bati_sorted[indice].multipolygone == "yes":
+    if new_bati_sorted[indice].multipolygone :
         relation = new_bati_sorted[indice].ind_relation
         for members in range(new_relation[relation].nb_ways):
             if new_relation[relation].role[members] == "inner":
@@ -765,7 +765,7 @@ for i_bat in range(nb_bat_del):
     indice = dernier_id_inner_old + i_bat
     old_bati_sorted[indice].export_bat()
     file_del_building.write(old_bati_sorted[indice].print_bat + "\n")
-    if old_bati_sorted[indice].multipolygone == "yes":
+    if old_bati_sorted[indice].multipolygone :
         relation = old_bati_sorted[indice].ind_relation
         for members in range(old_relation[relation].nb_ways):
             if old_relation[relation].role[members] == "inner":
@@ -786,4 +786,3 @@ print "Durée du calcul : ", tps2 - tps1
 print "------------------------------------------------------------------"
 print "-                       FIN DU PROCESS                           -"
 print "------------------------------------------------------------------"
-
